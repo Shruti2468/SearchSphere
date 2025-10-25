@@ -1,0 +1,18 @@
+CREATE TABLE restaurant2 (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    link VARCHAR(500),
+    cuisine VARCHAR(255),
+    price DECIMAL(10, 2),
+    location POINT,
+    ratings DECIMAL(3, 1),
+    address VARCHAR(500),
+    reviews TEXT,
+    embedding VECTOR(384) NOT NULL,
+    VECTOR INDEX (embedding) M = 10 DISTANCE = COSINE
+);
+-- to check if the location is entered correctly since normal select dosent work
+SELECT id,
+    name,
+    ST_AsText(location) AS location_text
+FROM restaurant;

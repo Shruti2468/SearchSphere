@@ -5,8 +5,7 @@ import numpy as np
 import os
 import torch
 import geocoder
-from transformers import pipeline
-
+from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 
 DB_CONFIG = {
     "user": os.getenv("DB_USER", "root"),
@@ -15,13 +14,18 @@ DB_CONFIG = {
     "port": int(os.getenv("DB_PORT", "3308")),
     "database": os.getenv("DB_NAME", "hackathon"),
 }
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
 
 st.set_page_config(page_title="SearchSphere", layout="wide")
 st.title("SearchSphere: Semantic + Geo Restaurant Search")
 
-device = torch.device("cpu")
+device = "cpu"
+
 model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+
+model_name = "sshleifer/distilbart-cnn-12-6"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+summarization_model = AutoModelForSeq2SeqLM.from_pretrained(model_name, device_map=None)
+summarizer = pipeline("summarization", model=summarization_model, tokenizer=tokenizer, device=-1)
 
 conn = mysql.connector.connect(**DB_CONFIG)
 cursor = conn.cursor(dictionary=True)
@@ -33,7 +37,6 @@ def display_or_na(val):
     return val if val is not None else "N/A"
 
 def search_database(query_vec: np.ndarray, k=5, lat=None, lon=None, radius_km=None):
-
     vec_str = vector_to_mysql_string(query_vec)
     geo_filter = ""
     distance_column = ""
@@ -53,7 +56,7 @@ def search_database(query_vec: np.ndarray, k=5, lat=None, lon=None, radius_km=No
 
     sql = f"""
     SELECT 
-        id, name, link, price, ratings, address,reviews,
+        id, name, link, price, ratings, address, reviews,
         {distance_column}
         VEC_DISTANCE_COSINE(embedding, VEC_FromText('{vec_str}')) AS semantic_score
     FROM restaurant2
@@ -68,25 +71,30 @@ def search_database(query_vec: np.ndarray, k=5, lat=None, lon=None, radius_km=No
 def summarize_review(review_text, user_query):
     review_text = review_text[:4000]  
     prompt = (
-        f"Extract the reviews from the reviews and summarize the content removing all junk words and only keeping useful information dont add address\n"
+        f"Extract the reviews from the text and summarize them, removing junk words and keeping only useful information. "
+        f"Do not include address.\n"
         f"User query: {user_query}\n"
         f"Review: {review_text}\n"
-        " Keep it short and clear."
+        "Keep it short and clear."
     )
     summary = summarizer(prompt, do_sample=False, max_new_tokens=150)
-    return summary[0]['summary_text']  
+    return summary[0]['summary_text']
 
- 
 st.subheader("Your Location")
+
+# user_lat=12.97390
+# user_lon=77.59471
+# st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
+
 g = geocoder.ip('me')
 user_lat, user_lon = g.latlng if g.ok else (None, None)
-
 if user_lat is None or user_lon is None:
     st.warning("Could not detect location automatically. Please enter manually:")
     user_lat = st.number_input("Latitude", value=12.9716, format="%.6f")
     user_lon = st.number_input("Longitude", value=77.5946, format="%.6f")
 else:
     st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
+
 
 query = st.text_input("Enter your query (e.g., quiet, pet-friendly café with Wi-Fi):")
 num_results = st.slider("Number of results to show", min_value=1, max_value=20, value=5)
@@ -106,7 +114,6 @@ if st.button("Search") and query.strip() != "":
     if not results:
         st.warning("No results found.")
     else:
-
         st.success(f"Found {len(results)} results!")
         for i, res in enumerate(results, 1):
             summary_text = summarize_review(res['reviews'], query)
@@ -119,4 +126,3 @@ if st.button("Search") and query.strip() != "":
                 st.markdown(f"- **Distance:** {res['distance_m']/1000:.2f} km")
             st.markdown(f"- **Semantic score:** {res['semantic_score']:.4f}")
             st.markdown("---")
-

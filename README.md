@@ -81,7 +81,8 @@ streamlit run streamlitmain.py
 1. **Enter your query**, e.g.:
 
    ```
-   cafes with vegan options and live music that are pet friendly
+   -> places with Live sports screening and is Wheelchair accessible
+   -> cafes with vegan options and live music
    ```
 
 2. **Select number of restaurants** to show

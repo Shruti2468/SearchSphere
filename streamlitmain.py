@@ -82,18 +82,18 @@ def summarize_review(review_text, user_query):
 
 st.subheader("Your Location")
 
-# user_lat=12.97390
-# user_lon=77.59471
-# st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
+user_lat=12.97390
+user_lon=77.59471
+st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
 
-g = geocoder.ip('me')
-user_lat, user_lon = g.latlng if g.ok else (None, None)
-if user_lat is None or user_lon is None:
-    st.warning("Could not detect location automatically. Please enter manually:")
-    user_lat = st.number_input("Latitude", value=12.9716, format="%.6f")
-    user_lon = st.number_input("Longitude", value=77.5946, format="%.6f")
-else:
-    st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
+# g = geocoder.ip('me')
+# user_lat, user_lon = g.latlng if g.ok else (None, None)
+# if user_lat is None or user_lon is None:
+#     st.warning("Could not detect location automatically. Please enter manually:")
+#     user_lat = st.number_input("Latitude", value=12.9716, format="%.6f")
+#     user_lon = st.number_input("Longitude", value=77.5946, format="%.6f")
+# else:
+#     st.info(f"Detected location: ({user_lat:.5f}, {user_lon:.5f})")
 
 
 query = st.text_input("Enter your query (e.g., quiet, pet-friendly café with Wi-Fi):")

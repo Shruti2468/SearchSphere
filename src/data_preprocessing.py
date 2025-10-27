@@ -160,5 +160,5 @@ def main(csv: str) -> None:
 
 
 if __name__ == "__main__":
-    CSV = "Bangalore_restaurants.csv"
+    CSV = "../Bangalore_restaurants.csv"
     main(CSV)

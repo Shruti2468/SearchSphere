@@ -40,7 +40,7 @@ INSERT INTO restaurants
 VALUES (%s, %s, %s, %s, ST_PointFromText(%s), %s, %s, %s, VEC_FromText(%s))
 """
 
-df = pd.read_csv("Bangalore_restaurants.csv")
+df = pd.read_csv("../Bangalore_restaurants.csv")
 df_new = df[[
     "name", "link", "cuisine", "price", "location",
     "ratings", "address", "review_passages", "embedding"

@@ -1,146 +1,126 @@
-# SearchSphere: Semantic + Geo Restaurant Search
+SearchSphere: Semantic + Geo Restaurant Search
 
-**Author:** Shruti Suresh  
-**Domain:** NLP, Semantic Search, Geospatial Filtering, Streamlit App
+Author: Shruti Suresh
+Domain: NLP, Semantic Search, Geospatial Filtering, Streamlit App
 
----
+Project Overview
 
-## **Project Overview**
+SearchSphere allows users to search for restaurants in Bangalore using:
 
-SearchSphere allows searching restaurants in Bangalore using:
+Semantic similarity of reviews – Understands the meaning behind your natural language queries.
 
-- **Semantic similarity of reviews** - Natural language understanding of your queries
-- **Geo-location filtering** - Distance-based filtering from your location
-- **Summarized reviews** - Quick insights without reading lengthy reviews
+Geo-location filtering – Filters restaurants based on distance from your location.
 
-The project uses a preprocessed CSV (`Bangalore_restaurants_cleaned_rag.csv`) and MariaDB. No web scraping is needed to run the code , you can just use the csv provided.
+Summarized reviews – Provides concise insights without reading lengthy reviews.
 
----
+The project uses a preprocessed CSV file (Bangalore_restaurants.csv) and MariaDB.
+Web scraping is not required to run the application — you can directly use the provided CSV file.
 
-## **Setup Instructions**
+The CSV file was created by scraping popular Bangalore restaurant pages from Zomato.
+You may modify or extend it by adding more restaurants if needed.
 
-### 1️ Prerequisites
+Setup Instructions
 
-- Python 3.11+
-- MariaDB 10.11+ (or MySQL 8.0+ with VECTOR support)
-- Chrome + ChromeDriver (ensure version matches your Chrome)
-- Internet connection
+1. Prerequisites
 
-### 2️ Install Python Dependencies
+Python 3.11 or higher
 
-```bash
-pip install -r requirements.txt
-```
+MariaDB 10.11 or higher (with VECTOR support)
 
-### 3️ Database Setup
+Chrome and ChromeDriver (only required if you plan to run the web scraping code)
 
-Start MariaDB and create a database (default: `hackathon`):
+Note: Running the web scraping code is not required to use the database or the Streamlit app.
 
-```sql
-CREATE DATABASE hackathon;
-```
+2. Install Python Dependencies
+   pip install -r requirements.txt
 
-Ensure the `restaurant2` table exists with the following structure:
+3. Database Setup
 
-```sql
-CREATE TABLE restaurant2 (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    link VARCHAR(500),
-    cuisine VARCHAR(255),
-    price DECIMAL(10, 2),
-    location POINT,
-    ratings DECIMAL(3, 1),
-    address VARCHAR(500),
-    reviews TEXT,
-    embedding VECTOR(384) NOT NULL,
-    VECTOR INDEX (embedding) M = 10 DISTANCE = COSINE
-);
-```
+Run the database_setup.py script and update the environment variables with your database credentials.
+This script creates the database, defines the table structure, and inserts values from the CSV file.
 
-### 4️ Insert Preprocessed Data
+Table structure:
 
-Run the Python script to insert the CSV data into MariaDB:
+id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(255) NOT NULL,
+link VARCHAR(500),
+cuisine VARCHAR(255),
+price DECIMAL(10, 2),
+location POINT,
+ratings DECIMAL(3, 1),
+address VARCHAR(500),
+reviews TEXT,
+embedding VECTOR(384) NOT NULL,
+VECTOR INDEX (embedding) M = 10 DISTANCE = COSINE
 
-```bash
-python insert_to_db.py
-```
+Cosine distance is used as it provided better results for this use case, but Euclidean distance can also be used with MariaDB.
 
-> **Note:** CSV already contains embeddings and cleaned reviews. No scraping needed.
+Note: The CSV already contains embeddings and cleaned reviews.
 
-### 5️ Launch the Streamlit App
+4. Launch the Streamlit App
+   streamlit run streamlitmain.py
 
-```bash
-streamlit run streamlitmain.py
-```
+Using the App
 
----
+Enter a query such as:
 
-## **Using the App**
+-> places with live sports screening and wheelchair access
+-> cafes with vegan options and live music
 
-1. **Enter your query**, e.g.:
-
-   ```
-   -> places with Live sports screening and is Wheelchair accessible
-   -> cafes with vegan options and live music
-   ```
-
-2. **Select number of restaurants** to show
-
-3. **Set maximum distance** (in km)
-
-4. **Click Search** to view results
+Select the number of restaurants to display.
+Set the maximum distance (in kilometers).
+Click Search to view results.
 
 The app will display:
 
-- Restaurant Name, Link, and Address
-- Price and Distance
-- Summarized Reviews
-- Semantic similarity score
+Restaurant name, link, and address
 
----
+Price and distance
 
-## **Quick Notes**
+Summarized reviews
 
-- The LLM used in this demo is intended for demonstration purposes and may not provide highly accurate responses.
-- The tester’s location is currently fixed to Bangalore for consistency. You can uncomment the geospatial query code to enable dynamic location-based filtering.
-- MariaDB is used as the database because it supports both vector search (for embeddings) and geospatial queries (for location filtering) within the same table, simplifying implementation for this demo.
+Semantic similarity score
 
----
+Quick Notes
 
-## **Features**
+The LLM used in this demo is for demonstration purposes and may not always provide highly accurate summaries.
 
-**Semantic Search** - Understands natural language queries  
-**Geo-filtering** - Find restaurants within your preferred distance  
-**Review Summarization** - Get the essence without reading everything  
-**Fast Retrieval** - Vector indexing for quick results
+The tester’s location is fixed to Bangalore for consistency. You can uncomment the geospatial query code to enable dynamic location-based filtering.
 
----
+MariaDB was chosen because it supports both vector search (for embeddings) and geospatial queries (for location filtering) within the same table, simplifying the implementation.
 
-## **Tech Stack**
+Features
 
-- **Backend:** Python, MariaDB with Vector Support
-- **Frontend:** Streamlit
-- **NLP:** Sentence Transformers (384-dimensional embeddings)
-- **Geospatial:** Point-based location filtering
-- **Browser Automation:** Selenium with ChromeDriver
+Semantic Search – Understands natural language queries
 
----
+Geo-filtering – Finds restaurants within a preferred distance
 
-## **Future Enhancements**
+Review Summarization – Provides concise summaries of reviews
 
-- 🌐 Multi-city support
-- 🎨 Enhanced UI with restaurant images
-- 📊 Advanced filtering (price range, ratings, cuisine type)
-- 💬 Real-time review updates
-- 🗺️ Interactive map visualization
+Fast Retrieval – Utilizes vector indexing for quick results
 
----
+Tech Stack
 
-## **License**
+Backend: Python, MariaDB with Vector Support
+Frontend: Streamlit
+NLP: Sentence Transformers (384-dimensional embeddings)
+Geospatial: Point-based location filtering
+Browser Automation: Selenium with ChromeDriver
 
-This project is created for educational and demonstration purposes.
+Future Enhancements
 
----
+Multi-city support
 
-**Happy Searching!**
+Enhanced UI with restaurant images
+
+Advanced filtering (price range, ratings, cuisine type)
+
+Real-time review updates
+
+Interactive map visualization
+
+License
+
+This project was created for educational and demonstration purposes.
+
+Happy Searching!

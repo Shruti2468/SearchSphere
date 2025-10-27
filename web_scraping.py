@@ -164,8 +164,8 @@ def scrape_restaurants():
     driver.quit()
     
     df = pd.DataFrame(data)
-    df.to_csv("Bangalore_restaurants_complete.csv", index=False, encoding='utf-8')
-    print(f"\nSaved {len(df)} restaurants to Bangalore_restaurants_complete.csv")
+    df.to_csv("Bangalore_restaurants.csv", index=False, encoding='utf-8')
+    print(f"\nSaved {len(df)} restaurants to Bangalore_restaurants.csv")
     print(f"Elapsed time: {time.time() - start:.2f}s")
     return df
 

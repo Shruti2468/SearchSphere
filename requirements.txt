@@ -4,8 +4,8 @@ selenium
 beautifulsoup4
 nltk
 sentence-transformers
-torch
 transformers
 streamlit
 geocoder
 mysql-connector-python
+python-dotenv

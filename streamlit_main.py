@@ -3,32 +3,30 @@ import mysql.connector
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import os
-import torch
 import geocoder
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+from dotenv import load_dotenv
 
-DB_CONFIG = {
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASS", "root"),
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "port": int(os.getenv("DB_PORT", "3308")),
-    "database": os.getenv("DB_NAME", "hackathon"),
-}
-
-st.set_page_config(page_title="SearchSphere", layout="wide")
-st.title("SearchSphere: Semantic + Geo Restaurant Search")
+load_dotenv()
 
 device = "cpu"
-
 model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
-
 model_name = "sshleifer/distilbart-cnn-12-6"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 summarization_model = AutoModelForSeq2SeqLM.from_pretrained(model_name, device_map=None)
 summarizer = pipeline("summarization", model=summarization_model, tokenizer=tokenizer, device=-1)
 
-conn = mysql.connector.connect(**DB_CONFIG)
+conn = mysql.connector.connect(
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT"),
+    database=os.getenv("DB_NAME"),
+)
 cursor = conn.cursor(dictionary=True)
+
+st.set_page_config(page_title="SearchSphere", layout="wide")
+st.title("SearchSphere: Semantic + Geo Restaurant Search")
 
 def vector_to_mysql_string(vector: np.ndarray) -> str:
     return "[" + ",".join([str(x) for x in vector]) + "]"
@@ -38,32 +36,23 @@ def display_or_na(val):
 
 def search_database(query_vec: np.ndarray, k=5, lat=None, lon=None, radius_km=None):
     vec_str = vector_to_mysql_string(query_vec)
-    geo_filter = ""
-    distance_column = ""
-    if lat is not None and lon is not None and radius_km is not None:
-        geo_filter = f"""
-        WHERE ST_Distance_Sphere(
-            POINT(ST_Y(location), ST_X(location)), 
-            POINT({lon}, {lat})
-        ) <= {radius_km * 1000}
-        """
-        distance_column = f"""
-        ST_Distance_Sphere(
-            POINT(ST_Y(location), ST_X(location)), 
-            POINT({lon}, {lat})
-        ) AS distance_m,
-        """
 
     sql = f"""
-    SELECT 
-        id, name, link, price, ratings, address, reviews,
-        {distance_column}
-        VEC_DISTANCE_COSINE(embedding, VEC_FromText('{vec_str}')) AS semantic_score
-    FROM restaurant2
-    {geo_filter}
-    ORDER BY semantic_score
-    LIMIT {k};
-    """
+        SELECT 
+            id, name, link, price, ratings, address, reviews,
+            ST_Distance_Sphere(
+                POINT(ST_Y(location), ST_X(location)), 
+                POINT({lon}, {lat})
+            ) AS distance_m,
+            VEC_DISTANCE_COSINE(embedding, VEC_FromText('{vec_str}')) AS semantic_score
+        FROM restaurants
+        WHERE ST_Distance_Sphere(
+                POINT(ST_Y(location), ST_X(location)), 
+                POINT({lon}, {lat})
+            ) <= {radius_km * 1000}
+        ORDER BY semantic_score
+        LIMIT {k};
+        """
 
     cursor.execute(sql)
     return cursor.fetchall()

@@ -75,8 +75,8 @@ streamlit run streamlitmain.py
 
 ###  Using the App
 Enter a query such as:
->places with live sports screening and wheelchair access
->cafes with vegan options and live music
+>- places with live sports screening and wheelchair access
+>- cafes with vegan options and live music
 
 Then:
 - Select the number of restaurants to display.

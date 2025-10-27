@@ -75,6 +75,7 @@ streamlit run streamlitmain.py
 
 ###  Using the App
 Enter a query such as:
+>- quiet vegan café with Wi-Fi
 >- places with live sports screening and wheelchair access
 >- cafes with vegan options and live music
 

@@ -31,14 +31,14 @@ You may modify or extend it by adding more restaurants if needed.
 
 > **Note:** Running the web scraping code is not required to use the database or the Streamlit app.
 
----
+
 
 ### 2. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
----
+
 
 ### 3. Database Setup
 Run the **database_setup**.py script and update the environment variables with your database credentials.
